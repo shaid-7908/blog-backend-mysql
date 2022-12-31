@@ -4,7 +4,7 @@ const jwt = require("jsonwebtoken");
 
 exports.Register=Register
 exports.Login=Login
-
+exports.UpdateProfile=UpdateProfile
 
 
 function Register(req, res){
@@ -67,6 +67,7 @@ function Register(req, res){
    }
  })
 }
+
 
 function Login(req,res){
  let {userName,userEmail,userPassword}=req.body
@@ -154,4 +155,69 @@ if(userEmail){
 
 }
 
+}
+
+
+function UpdateProfile(req,res){
+    const bearerHeader = req.headers["authorization"]
+    let {firstName,lastName,userImage}=req.body
+    let token=jwt.verify(bearerHeader,process.env.PASS_SECRET)
+    conn.query(`SELECT * FROM users WHERE userId=?`,[token.userId],
+    (err,result)=>{
+        if(err) console.log(err)
+        else{
+
+       
+        if(!!firstName){
+            firstName = firstName
+        }else{
+            firstName = result[0].firstName
+        }
+        if(!!lastName){
+            lastName =lastName
+        }else{
+            lastName = result[0].lastName
+        }
+        if(!!userImage){
+            userImage=userImage
+        }else{
+            userImage =result[0].userImage
+        }
+        conn.query(`UPDATE users SET firstName =? , lastName =?, userImage =? WHERE userId=?`,
+        [
+            firstName,
+            lastName,
+            userImage,
+            token.userId
+        ],(err,result)=>{
+            if(err) console.log(err)
+
+            else{
+                  conn.query(`SELECT * FROM users WHERE userId=?`,
+                  [token.userId],
+                  (err,result)=>{
+                    if(err) console.log(err)
+
+                    else{
+                        let updatedResult={
+                            firstName:result[0].firstName,
+                            lastName:result[0].lastName,
+                            userImage:result[0].userImage,
+                            userName:result[0].userName
+                        }
+                        res.send({
+                            status:200,
+                            data:updatedResult,
+                            message:'User Profile updated'
+                        })
+                    }
+
+                  }
+                  )
+
+            }
+        }
+        )
+    }
+    })
 }
