@@ -5,10 +5,10 @@ const jwt = require("jsonwebtoken");
 exports.Register=Register
 exports.Login=Login
 exports.UpdateProfile=UpdateProfile
-
+exports.GoogleSignup=GoogleSignup
 
 function Register(req, res){
- let { userName,userEmail ,userPassword,isAdmin,userImage,firstName,lastName} = req.body
+ let { userName,userEmail ,userPassword,isAdmin,userImage,firstName,lastName,signupType} = req.body
 
  conn.query(`SELECT *, count(userId) as countt FROM users WHERE userEmail=?`,[userEmail],(err,result)=>{
 
@@ -19,8 +19,8 @@ function Register(req, res){
         if(err) console.log(err)
         if(result[0].countt1 === 0){
 
-            conn.query(`INSERT INTO users (userName,userEmail,userpassword ,isAdmin ,userImage,firstName,lastName) 
-            values(?,?,?,?,?,?,?)
+            conn.query(`INSERT INTO users (userName,userEmail,userpassword ,isAdmin ,userImage,firstName,lastName,signupType) 
+            values(?,?,?,?,?,?,?,?)
             `,[
                userName,
                userEmail,
@@ -29,6 +29,7 @@ function Register(req, res){
                userImage,
                firstName,
                lastName,
+               "email"
             ],(err,result)=>{
 
                 if(err) console.log(err)
@@ -54,7 +55,7 @@ function Register(req, res){
             res.send({
                 status:200,
                 data:{},
-                message:'User is taken'
+                message:'Username is taken'
             })
         }
     })
@@ -220,4 +221,68 @@ function UpdateProfile(req,res){
         )
     }
     })
+}
+
+
+function GoogleSignup(req,res){
+let {firstName,lastName,userEmail,socialKey,signupType,userImage,isAdmin}=req.body
+  
+   conn.query(`SELECT *, count(userId) as countt FROM users WHERE socialKey=?`,
+   [socialKey],
+   (err,result)=>{
+    if(err) console.log(err)
+    else if(result[0].countt === 0){
+        conn.query(`INSERT INTO users (firstName,lastName,userEmail,socialKey,singupType,userImage,isAdmin) 
+        VALUES(?,?,?,?,?,?,?)
+        `,
+        [
+            firstName,
+            lastName,
+            userEmail,
+            socialKey,
+            "google",
+            userImage,
+            0
+        ],
+        (err,result)=>{
+            if(err) console.log(err)
+           else{
+            conn.query(`SELECT * FROM users WHERE userId=?`,
+            [result.insertId],
+            (err,result)=>{
+                 let token = jwt.sign(
+                        { userId: result[0].userId, firstName: result[0].firstName },
+                        process.env.PASS_SECRET
+                      );
+                if(err) console.log(err)
+                else{
+                    res.send({
+                        status:200,
+                        data:token,
+                        message:'Signed up successfuly'
+                    })
+                }
+            }
+            )
+           }
+        }
+        )
+    }else{
+      let token = jwt.sign(
+                        { userId: result[0].userId, firstName: result[0].firstName },
+                        process.env.PASS_SECRET
+                      );
+     res.send({
+        status:200,
+        data:token,
+        message:'Login Successfull'
+     })
+
+    }
+
+
+   }
+   
+   )
+
 }
