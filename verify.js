@@ -32,11 +32,11 @@ function Verifytoken(req,res,next){
           )
 
         }catch(err){
-          console.log(err)
+          
           res.send({
             status:400,
-            data:{},
-            message:"Error occured"
+            data:err,
+            message:"Login again token not valid"
           })
         }
     }else{

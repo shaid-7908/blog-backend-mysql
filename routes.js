@@ -9,5 +9,8 @@ router.post('/login',authentiaction.Login)
 router.post('/updateprofile',checker.Verifytoken,authentiaction.UpdateProfile)
 
 router.post('/postblog',checker.Verifytoken,blogPost.BlogPost)
+router.post('/deleteblog',checker.Verifytoken,blogPost.Deleteblog)
+router.post('/changeblogphoto',checker.Verifytoken,blogPost.Changeblogphoto)
+router.post('/editblog',checker.Verifytoken,blogPost.Editblog)
 
 module.exports=router

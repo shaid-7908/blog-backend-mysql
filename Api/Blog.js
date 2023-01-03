@@ -1,6 +1,12 @@
 
 const jwt = require("jsonwebtoken");
 
+exports.BlogPost=BlogPost
+exports.Deleteblog=Deleteblog
+exports.Changeblogphoto=Changeblogphoto
+exports.Editblog=Editblog
+
+
 const cloudinary=require('cloudinary').v2
 cloudinary.config({ 
     cloud_name: 'dnszaem4s', 
@@ -9,7 +15,22 @@ cloudinary.config({
     secure: true
   });
 
-  exports.BlogPost=BlogPost
+ async function Changeblogphoto(req,res){
+    const bearerHeader = req.headers["authorization"]
+    const token=jwt.verify(bearerHeader,process.env.PASS_SECRET)
+    const file=req.files.photo
+    await cloudinary.uploader.upload(file.tempFilePath,(err,result)=>{
+        if(err) console.log(err)
+        else{
+            res.send({
+                status:200,
+                data:result.url,
+                message:'Imgae uploaded'
+            })
+        }
+    } )
+  }
+
 
 async function BlogPost(req,res){
     const bearerHeader = req.headers["authorization"]
@@ -48,4 +69,95 @@ async function BlogPost(req,res){
         )
         }
     })
+}
+
+function Deleteblog(req,res){
+    const bearerHeader=req.headers['authorization']
+    const token=jwt.verify(bearerHeader,process.env.PASS_SECRET)
+    let {blogId}=req.body
+
+    conn.query(`SELECT *,count(blogId) as countt FROM blogs WHERE blogId=?`,
+    [blogId],
+    (err,result)=>{
+        console.log(result)
+        if(err) console.log(err)
+       if(result[0].countt !== 0){
+         if(result[0].userId === token.userId){
+          conn.query(`DELETE FROM blogs WHERE blogId=?`,
+          [blogId],
+          (err,result)=>{
+            if(err) console.log(err)
+            else{
+                res.send({
+                    status:200,
+                    data:{},
+                    message:'Blog deleted'
+                })
+            }
+          }
+          )
+         }else{
+            res.send({
+                status:400,
+                data:{},
+                message:'You are not allowed to do that'
+            })
+         }
+
+
+       }
+    }
+    )
+}
+
+function Editblog(req,res){
+const bearerHeader=req.headers['authorization']
+const token=jwt.verify(bearerHeader,process.env.PASS_SECRET)
+
+let {blogId,blogText,blogImage}=req.body
+
+conn.query(`SELECT *,count(blogId) as countt FROM blogs WHERE blogId=?`,
+[blogId],
+(err,result)=>{
+    if(err) console.log(err)
+    else if(result[0].countt !==0){
+        if(result[0].userId === token.userId){
+            if(!!blogText){
+                blogText=blogText
+            }else{
+                blogText=result[0].blogText
+            }
+            if(!!blogImage){
+                blogImage=blogImage
+            }else{
+                blogImage=result[0].blogImage
+            }
+            conn.query(`UPDATE blogs SET blogText=? , blogImage=? WHERE blogId=?`,
+            [blogText,
+            blogImage,
+             blogId 
+            ],
+            (err,result)=>{
+                if(err) console.log(err)
+                else{
+                    res.send({
+                        status:200,
+                        data:result,
+                        message:'Blog updated'
+                    })
+                }
+            }
+            )
+        }else{
+            res.send({
+                status:200,
+                data:{},
+                message:'You are not allowed to do that'
+            })
+        }
+    }
+}
+)
+
+
 }

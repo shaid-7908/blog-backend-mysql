@@ -25,7 +25,7 @@ function Register(req, res){
                userName,
                userEmail,
                CryptoJS.AES.encrypt(userPassword, process.env.PASS_SECRET).toString(),
-               0,
+               1,
                userImage,
                firstName,
                lastName,
@@ -79,6 +79,7 @@ conn.query(`SELECT *,count(userId) as countt FROM users where userName=?`,[userN
     if(result[0].countt != 0){
         const haspass= CryptoJS.AES.decrypt(result[0].userpassword, process.env.PASS_SECRET)
         const Orpassword=haspass.toString(CryptoJS.enc.Utf8)
+       
         if(userPassword != Orpassword) {
             res.send({
                 status:400,
