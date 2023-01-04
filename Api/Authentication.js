@@ -1,16 +1,30 @@
 const CryptoJS=require("crypto-js")
 const jwt = require("jsonwebtoken");
-
+const Joi=require('joi')
 
 exports.Register=Register
 exports.Login=Login
 exports.UpdateProfile=UpdateProfile
 exports.GoogleSignup=GoogleSignup
 
-function Register(req, res){
+async function Register(req, res){
+    const Schema=Joi.object({
+        userName:Joi.string().min(3),
+        userEmail:Joi.string().email().lowercase(),
+        firstName:Joi.string().min(3).max(30),
+        lastName:Joi.string().min(2).max(30),
+        userPassword:Joi.string()
+        .pattern(new RegExp('^[a-zA-Z0-9]{3,30}$')),
+        isAdmin:Joi.boolean(),
+        userImage:Joi.string(),
+        signupType:Joi.string()
+    })
  let { userName,userEmail ,userPassword,isAdmin,userImage,firstName,lastName,signupType} = req.body
+ try {
+    const value = await Schema.validateAsync(req.body);
+    console.log(value)
 
- conn.query(`SELECT *, count(userId) as countt FROM users WHERE userEmail=?`,[userEmail],(err,result)=>{
+ conn.query(`SELECT *, count(userId) as countt FROM users WHERE userEmail=?`,[userEmail],(err,result)=>{ 
 
    if(err) console.log(err)
    if(result[0].countt === 0){
@@ -22,9 +36,9 @@ function Register(req, res){
             conn.query(`INSERT INTO users (userName,userEmail,userpassword ,isAdmin ,userImage,firstName,lastName,signupType) 
             values(?,?,?,?,?,?,?,?)
             `,[
-               userName,
-               userEmail,
-               CryptoJS.AES.encrypt(userPassword, process.env.PASS_SECRET).toString(),
+               value.userName,
+               value.userEmail,
+               CryptoJS.AES.encrypt(value.userPassword, process.env.PASS_SECRET).toString(),
                1,
                userImage,
                firstName,
@@ -67,6 +81,9 @@ function Register(req, res){
     })
    }
  })
+}
+catch (err) { console.log(err)}
+
 }
 
 
@@ -160,10 +177,19 @@ if(userEmail){
 }
 
 
-function UpdateProfile(req,res){
+async function UpdateProfile(req,res){
     const bearerHeader = req.headers["authorization"]
     let {firstName,lastName,userImage}=req.body
+    const Schema=Joi.object({
+        firstName:Joi.string().min(2).max(30),
+        lastName:Joi.string().min(2).max(3),
+        userImage:Joi.string()
+    })
     let token=jwt.verify(bearerHeader,process.env.PASS_SECRET)
+try{
+   const value= await Schema.validateAsync(req.body)
+
+
     conn.query(`SELECT * FROM users WHERE userId=?`,[token.userId],
     (err,result)=>{
         if(err) console.log(err)
@@ -222,6 +248,12 @@ function UpdateProfile(req,res){
         )
     }
     })
+
+}catch(err){
+    
+}
+
+
 }
 
 

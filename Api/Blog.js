@@ -3,19 +3,19 @@ const jwt = require("jsonwebtoken");
 
 exports.BlogPost=BlogPost
 exports.Deleteblog=Deleteblog
-exports.Changeblogphoto=Changeblogphoto
+exports.Uploadphoto=Uploadphoto
 exports.Editblog=Editblog
 
 
 const cloudinary=require('cloudinary').v2
 cloudinary.config({ 
-    cloud_name: 'dnszaem4s', 
-    api_key: '311811788413783', 
-    api_secret: '3TnMD0KhGMwxd7HBJsRNhlYGDag',
+    cloud_name: process.env.CLOUD_NAME, 
+    api_key: process.env.API_KEY, 
+    api_secret: process.env.API_SECRET,
     secure: true
   });
 
- async function Changeblogphoto(req,res){
+ async function Uploadphoto(req,res){
     const bearerHeader = req.headers["authorization"]
     const token=jwt.verify(bearerHeader,process.env.PASS_SECRET)
     const file=req.files.photo
@@ -110,6 +110,8 @@ function Deleteblog(req,res){
     )
 }
 
+
+
 function Editblog(req,res){
 const bearerHeader=req.headers['authorization']
 const token=jwt.verify(bearerHeader,process.env.PASS_SECRET)
@@ -161,3 +163,4 @@ conn.query(`SELECT *,count(blogId) as countt FROM blogs WHERE blogId=?`,
 
 
 }
+
