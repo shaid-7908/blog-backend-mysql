@@ -39,7 +39,7 @@ async function Register(req, res){
                value.userName,
                value.userEmail,
                CryptoJS.AES.encrypt(value.userPassword, process.env.PASS_SECRET).toString(),
-               1,
+               0,
                userImage,
                firstName,
                lastName,
@@ -181,8 +181,8 @@ async function UpdateProfile(req,res){
     const bearerHeader = req.headers["authorization"]
     let {firstName,lastName,userImage}=req.body
     const Schema=Joi.object({
-        firstName:Joi.string().min(2).max(30),
-        lastName:Joi.string().min(2).max(3),
+        firstName:Joi.string().min(2).max(30).required(),
+        lastName:Joi.string().min(2).max(30).required(),
         userImage:Joi.string()
     })
     let token=jwt.verify(bearerHeader,process.env.PASS_SECRET)
@@ -284,7 +284,7 @@ let {firstName,lastName,userEmail,socialKey,signupType,userImage,isAdmin}=req.bo
             [result.insertId],
             (err,result)=>{
                  let token = jwt.sign(
-                        { userId: result[0].userId, firstName: result[0].firstName },
+                        { userId: result[0].userId, firstName: result[0].firstName ,isAdmin:result[0].isAdmin},
                         process.env.PASS_SECRET
                       );
                 if(err) console.log(err)
@@ -302,7 +302,7 @@ let {firstName,lastName,userEmail,socialKey,signupType,userImage,isAdmin}=req.bo
         )
     }else{
       let token = jwt.sign(
-                        { userId: result[0].userId, firstName: result[0].firstName },
+                        { userId: result[0].userId, firstName: result[0].firstName ,isAdmin:result[0].isAdmin},
                         process.env.PASS_SECRET
                       );
      res.send({
