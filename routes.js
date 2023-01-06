@@ -14,5 +14,6 @@ router.post('/uploadphoto',checker.Verifytoken,blogPost.Uploadphoto)
 router.post('/editblog',checker.Verifytoken,blogPost.Editblog)
 
 router.get('/getAllUser',checker.Verifytoken,admin_.GetAllUsers)
+router.post('/changeblogstatus',checker.Verifytoken,admin_.ChangeBlogStatus)
 
 module.exports=router

@@ -1,6 +1,8 @@
 const jwt = require("jsonwebtoken");
 
 exports.GetAllUsers=GetAllUsers
+exports.ChangeBlogStatus=ChangeBlogStatus
+
 
 async function GetAllUsers(req,res){
     let bearerHeader=req.headers['authorization']
@@ -28,9 +30,39 @@ async function GetAllUsers(req,res){
       })
     }else{
         res.send({
-            status:200,
+            status:403,
             data:{},
             message:'You are not an Admin'
+        })
+    }
+}
+
+async function ChangeBlogStatus(req,res){
+    let bearerHeader=req.headers['authorization']
+    let token = jwt.verify(bearerHeader,process.env.PASS_SECRET)
+    let {blogId,statusType}=req.body
+    if(token.isAdmin === 1){
+       conn.query(`SELECT * FROM blogs WHERE blogId=?`,[blogId],(err,result)=>{
+        if(err) console.log(err)
+        else if(result.length !== 0){
+            conn.query(`UPDATE blogs SET statusType=? WHERE blogId=?`,[statusType,blogId],(err,result)=>{
+                if(err) console.log(err)
+                res.send({
+                    status:200,
+                    data:{},
+                    message:'Status Updated'
+                })
+            })
+        }else{
+            console.log(blogId ,'dosent Exists')
+        }
+       })
+
+    }else{
+        res.send({
+        status:403,
+        data:{},
+        message:'You are not an admin'
         })
     }
 }

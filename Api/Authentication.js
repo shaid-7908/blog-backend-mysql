@@ -50,7 +50,7 @@ async function Register(req, res){
                 else{
                    conn.query(`SELECT * FROM users WHERE userId=? `,[result.insertId],(err,result)=>{
                     let token = jwt.sign(
-                        { userId: result[0].userId, userName: result[0].userName },
+                        { userId: result[0].userId, userName: result[0].userName ,isAdmin:result[0].isAdmin},
                         process.env.PASS_SECRET
                       );
                     if(err) console.log(err)
@@ -105,7 +105,7 @@ conn.query(`SELECT *,count(userId) as countt FROM users where userName=?`,[userN
             })
         }else{
             let token = jwt.sign(
-                { userId: result[0].userId, userName: result[0].userName,isAdmin:result[0].isAdmin },
+                { userId: result[0].userId, userName: result[0].userName,},
                 process.env.PASS_SECRET
               );
               res.send({
@@ -146,7 +146,7 @@ if(userEmail){
                 })
             }else{
                 let token = jwt.sign(
-                    { userId: result[0].userId, userName: result[0].userName,isAdmin:result[0].isAdmin },
+                    { userId: result[0].userId, userName: result[0].userName,isAdmin:result[0].isAdmin},
                     process.env.PASS_SECRET
                   );
                   res.send({

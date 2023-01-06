@@ -82,7 +82,7 @@ function Deleteblog(req,res){
         console.log(result)
         if(err) console.log(err)
        if(result[0].countt !== 0){
-         if(result[0].userId === token.userId){
+         if(result[0].userId === token.userId || token.isAdmin === 1){  
           conn.query(`DELETE FROM blogs WHERE blogId=?`,
           [blogId],
           (err,result)=>{
@@ -98,7 +98,7 @@ function Deleteblog(req,res){
           )
          }else{
             res.send({
-                status:400,
+                status:403,
                 data:{},
                 message:'You are not allowed to do that'
             })
@@ -152,7 +152,7 @@ conn.query(`SELECT *,count(blogId) as countt FROM blogs WHERE blogId=?`,
             )
         }else{
             res.send({
-                status:200,
+                status:403,
                 data:{},
                 message:'You are not allowed to do that'
             })

@@ -1,4 +1,4 @@
-const jwt=require("jsonwebtoken")
+const jwt= require("jsonwebtoken")
 const dotenv=require("dotenv")
 dotenv.config()
 
@@ -6,12 +6,12 @@ exports.Verifytoken=Verifytoken
 
 function Verifytoken(req,res,next){
     const bearerToken=req.headers["authorization"]
-    
 
     if(typeof bearerToken !== "undefined"){
         req.token =bearerToken.replace("Bearer ","")
+        
         try{
-          let token=jwt.verify(req.token,process.env.PASS_SECRET)
+          let token=jwt.verify(req.token,'AKA4477')
           conn.query(`SELECT count(*) FROM users WHERE userId=?`,
           [token.userId],
           (err,result)=>{
